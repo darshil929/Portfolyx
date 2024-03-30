@@ -1,11 +1,10 @@
+'use client'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { CalendarDateRangePicker } from "@/components/date-range-picker"
 import { Button } from "@/components/ui/button"
 import {
     Card,
     CardContent,
-    CardDescription,
-    CardFooter,
     CardHeader,
     CardTitle,
 } from "@/components/ui/card"
@@ -16,10 +15,31 @@ import {
     AccordionItem,
     AccordionTrigger,
 } from "@/components/ui/accordion"
-
+import { useState, useEffect } from 'react';
 import React from 'react'
+import LineChart from '../../../../components/line-chart'
 
 export default function page() {
+    const [stockData, setStockData] = useState([]);
+
+    useEffect(() => {
+        async function fetchStockData() {
+            try {
+                const response = await fetch('http://localhost:8000/stock');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch data');
+                }
+                const data = await response.json();
+                setStockData(data);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        }
+        fetchStockData();
+    }, []);
+
+    // const uniqueNames = [...new Set(stockData.map(item => item.fullName))];
+
     return (
         <ScrollArea className="h-full">
             <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -199,129 +219,48 @@ export default function page() {
                 </h2>
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-1">
                     <Accordion type="single" collapsible>
-                        <AccordionItem value="item-1" className="w-full">
-                            <AccordionTrigger>
-                                <Card className="w-full">
-                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                        <CardTitle className="text-l font-medium">
-                                            Subscriptions
-                                        </CardTitle>
-                                    </CardHeader>
-                                    <CardContent className='flex justify-between'>
-                                    <div>
-                                        Price
-                                    </div>
-                                        <div className="flex flex-col w-16">
-                                            <Button variant="outline" className="bg-green-600 text-white">Buy</Button>
-                                            <Button variant="outline" className="bg-red-600 text-white mt-2">Sell</Button>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            </AccordionTrigger>
-                            <AccordionContent>
-                                Graph Here
-                            </AccordionContent>
-                        </AccordionItem>
-                    </Accordion>
-                    <Accordion type="single" collapsible>
-                        <AccordionItem value="item-1" className="w-full">
-                            <AccordionTrigger>
-                            <Card className="w-full">
-                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                        <CardTitle className="text-l font-medium">
-                                            Subscriptions
-                                        </CardTitle>
-                                    </CardHeader>
-                                    <CardContent className='flex justify-between'>
-                                    <div>
-                                        Price
-                                    </div>
-                                        <div className="flex flex-col w-16">
-                                            <Button variant="outline" className="bg-green-600 text-white">Buy</Button>
-                                            <Button variant="outline" className="bg-red-600 text-white mt-2">Sell</Button>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            </AccordionTrigger>
-                            <AccordionContent>
-                                Graph Here
-                            </AccordionContent>
-                        </AccordionItem>
-                    </Accordion>
-                    <Accordion type="single" collapsible>
-                        <AccordionItem value="item-1" className="w-full">
-                            <AccordionTrigger>
-                            <Card className="w-full">
-                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                        <CardTitle className="text-l font-medium">
-                                            Subscriptions
-                                        </CardTitle>
-                                    </CardHeader>
-                                    <CardContent className='flex justify-between'>
-                                    <div>
-                                        Price
-                                    </div>
-                                        <div className="flex flex-col w-16">
-                                            <Button variant="outline" className="bg-green-600 text-white">Buy</Button>
-                                            <Button variant="outline" className="bg-red-600 text-white mt-2">Sell</Button>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            </AccordionTrigger>
-                            <AccordionContent>
-                                Graph Here
-                            </AccordionContent>
-                        </AccordionItem>
-                    </Accordion>
-                    <Accordion type="single" collapsible>
-                        <AccordionItem value="item-1" className="w-full">
-                            <AccordionTrigger>
-                            <Card className="w-full">
-                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                        <CardTitle className="text-l font-medium">
-                                            Subscriptions
-                                        </CardTitle>
-                                    </CardHeader>
-                                    <CardContent className='flex justify-between'>
-                                    <div>
-                                        Price
-                                    </div>
-                                        <div className="flex flex-col w-16">
-                                            <Button variant="outline" className="bg-green-600 text-white">Buy</Button>
-                                            <Button variant="outline" className="bg-red-600 text-white mt-2">Sell</Button>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            </AccordionTrigger>
-                            <AccordionContent>
-                                Graph Here
-                            </AccordionContent>
-                        </AccordionItem>
-                    </Accordion>
-                    <Accordion type="single" collapsible>
-                        <AccordionItem value="item-1" className="w-full">
-                            <AccordionTrigger>
-                            <Card className="w-full">
-                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                        <CardTitle className="text-l font-medium">
-                                            Subscriptions
-                                        </CardTitle>
-                                    </CardHeader>
-                                    <CardContent className='flex justify-between'>
-                                    <div>
-                                        Price
-                                    </div>
-                                        <div className="flex flex-col w-16">
-                                            <Button variant="outline" className="bg-green-600 text-white">Buy</Button>
-                                            <Button variant="outline" className="bg-red-600 text-white mt-2">Sell</Button>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            </AccordionTrigger>
-                            <AccordionContent>
-                                Graph Here
-                            </AccordionContent>
-                        </AccordionItem>
+                        {stockData.map((item, index) => (
+                            <AccordionItem value={item} key={index} className="w-full">
+                                <AccordionTrigger>
+                                    <Card className="w-full">
+                                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                            <CardTitle className="text-l font-medium">
+                                                {item.fullName}  ({item.shortName})
+                                            </CardTitle>
+                                        </CardHeader>
+                                        {[item.data[item.data.length - 1]].map((item, index) => (
+                                        <CardContent key={index} className='flex justify-between'>
+                                            <div className="flex w-1/3 justify-between">
+                                                <div className='w-1/2 flex-col items-start'>
+                                                    <div className='mt-2'>
+                                                        Open:<br/>{item.open}
+                                                    </div>
+                                                    <div className='mt-2'>
+                                                        Close:<br/>{item.close}
+                                                    </div>
+                                                </div>
+                                                <div className='w-1/2 flex-col items-start'>
+                                                    <div className='mt-2 text-green-600'>
+                                                        High:<br/>{item.high}
+                                                    </div>
+                                                    <div className='mt-2 text-red-600'>
+                                                        Low:<br/>{item.low}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="flex flex-col w-16">
+                                                <Button variant="outline" className="bg-green-600 text-white">Buy</Button>
+                                                {/* <Button variant="outline" className="bg-red-600 text-white mt-2">Sell</Button> */}
+                                            </div>
+                                        </CardContent>
+                                        ))}
+                                    </Card>
+                                </AccordionTrigger>
+                                <AccordionContent>
+                                <LineChart data={item.data} />
+                                </AccordionContent>
+                            </AccordionItem>
+                        ))}
                     </Accordion>
                 </div>
             </div>
