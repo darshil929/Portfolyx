@@ -12,7 +12,17 @@ const portfolioSchema = new mongoose.Schema({
         quantity: { type: Number, required: true },
         amount_money: { type: Number, required: true },
         investment_date : { type: Date, required: true },
+    }],
+    etf: [{
+        etfID: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'etf'
+        }], 
+        quantity: { type: Number, required: true },
+        amount_money: { type: Number, required: true },
+        investment_date : { type: Date, required: true },
     }]
+
 });
 
 const Portfolio = mongoose.model('portfolio', portfolioSchema);
