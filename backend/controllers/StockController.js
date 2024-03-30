@@ -53,3 +53,4 @@ const addStocks = async (req, res, next) => {
 module.exports = {
     addStocks,
 }
+
