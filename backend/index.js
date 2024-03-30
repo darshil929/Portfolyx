@@ -1,4 +1,3 @@
-// index.js
 const express = require('express');
 const setupExpressApp = require('./services/ExpressApp');
 const connectToDatabase = require('./services/Database');

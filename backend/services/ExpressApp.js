@@ -15,14 +15,18 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const path = require("path");
+const cors = require("cors");
 
-const { UserRoutes } = require("../routes");
+const { UserRoutes, StockRoutes, ETFRoutes } = require("../routes");
 
 module.exports = async function setupExpressApp(app) {
+    app.use(cors());
     app.use(bodyParser.json());
     app.use(bodyParser.urlencoded({ extended: true }));
     
     app.use('/user', UserRoutes);
+    app.use('/stock', StockRoutes);
+    app.use('/etf', ETFRoutes);
 
     return app;
 };
