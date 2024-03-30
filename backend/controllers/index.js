@@ -3,5 +3,6 @@ module.exports = {
     ...require('./StockController'),
     ...require('./ETFController'),
     ...require('./Metrics'),
+    ...require('./PortfolioController'),
 };
 
