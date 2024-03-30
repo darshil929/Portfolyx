@@ -203,10 +203,19 @@ export default function page() {
                             <AccordionTrigger>
                                 <Card className="w-full">
                                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                        <CardTitle className="text-sm font-medium">
+                                        <CardTitle className="text-l font-medium">
                                             Subscriptions
                                         </CardTitle>
                                     </CardHeader>
+                                    <CardContent className='flex justify-between'>
+                                    <div>
+                                        Price
+                                    </div>
+                                        <div className="flex flex-col w-16">
+                                            <Button variant="outline" className="bg-green-600 text-white">Buy</Button>
+                                            <Button variant="outline" className="bg-red-600 text-white mt-2">Sell</Button>
+                                        </div>
+                                    </CardContent>
                                 </Card>
                             </AccordionTrigger>
                             <AccordionContent>
@@ -217,12 +226,21 @@ export default function page() {
                     <Accordion type="single" collapsible>
                         <AccordionItem value="item-1" className="w-full">
                             <AccordionTrigger>
-                                <Card className="w-full">
+                            <Card className="w-full">
                                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                        <CardTitle className="text-sm font-medium">
+                                        <CardTitle className="text-l font-medium">
                                             Subscriptions
                                         </CardTitle>
                                     </CardHeader>
+                                    <CardContent className='flex justify-between'>
+                                    <div>
+                                        Price
+                                    </div>
+                                        <div className="flex flex-col w-16">
+                                            <Button variant="outline" className="bg-green-600 text-white">Buy</Button>
+                                            <Button variant="outline" className="bg-red-600 text-white mt-2">Sell</Button>
+                                        </div>
+                                    </CardContent>
                                 </Card>
                             </AccordionTrigger>
                             <AccordionContent>
@@ -233,12 +251,21 @@ export default function page() {
                     <Accordion type="single" collapsible>
                         <AccordionItem value="item-1" className="w-full">
                             <AccordionTrigger>
-                                <Card className="w-full">
+                            <Card className="w-full">
                                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                        <CardTitle className="text-sm font-medium">
+                                        <CardTitle className="text-l font-medium">
                                             Subscriptions
                                         </CardTitle>
                                     </CardHeader>
+                                    <CardContent className='flex justify-between'>
+                                    <div>
+                                        Price
+                                    </div>
+                                        <div className="flex flex-col w-16">
+                                            <Button variant="outline" className="bg-green-600 text-white">Buy</Button>
+                                            <Button variant="outline" className="bg-red-600 text-white mt-2">Sell</Button>
+                                        </div>
+                                    </CardContent>
                                 </Card>
                             </AccordionTrigger>
                             <AccordionContent>
@@ -249,12 +276,21 @@ export default function page() {
                     <Accordion type="single" collapsible>
                         <AccordionItem value="item-1" className="w-full">
                             <AccordionTrigger>
-                                <Card className="w-full">
+                            <Card className="w-full">
                                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                        <CardTitle className="text-sm font-medium">
+                                        <CardTitle className="text-l font-medium">
                                             Subscriptions
                                         </CardTitle>
                                     </CardHeader>
+                                    <CardContent className='flex justify-between'>
+                                    <div>
+                                        Price
+                                    </div>
+                                        <div className="flex flex-col w-16">
+                                            <Button variant="outline" className="bg-green-600 text-white">Buy</Button>
+                                            <Button variant="outline" className="bg-red-600 text-white mt-2">Sell</Button>
+                                        </div>
+                                    </CardContent>
                                 </Card>
                             </AccordionTrigger>
                             <AccordionContent>
@@ -265,12 +301,21 @@ export default function page() {
                     <Accordion type="single" collapsible>
                         <AccordionItem value="item-1" className="w-full">
                             <AccordionTrigger>
-                                <Card className="w-full">
+                            <Card className="w-full">
                                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                        <CardTitle className="text-sm font-medium">
+                                        <CardTitle className="text-l font-medium">
                                             Subscriptions
                                         </CardTitle>
                                     </CardHeader>
+                                    <CardContent className='flex justify-between'>
+                                    <div>
+                                        Price
+                                    </div>
+                                        <div className="flex flex-col w-16">
+                                            <Button variant="outline" className="bg-green-600 text-white">Buy</Button>
+                                            <Button variant="outline" className="bg-red-600 text-white mt-2">Sell</Button>
+                                        </div>
+                                    </CardContent>
                                 </Card>
                             </AccordionTrigger>
                             <AccordionContent>
