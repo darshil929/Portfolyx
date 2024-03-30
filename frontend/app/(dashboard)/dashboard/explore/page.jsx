@@ -5,8 +5,6 @@ import { Button } from "@/components/ui/button"
 import {
     Card,
     CardContent,
-    CardDescription,
-    CardFooter,
     CardHeader,
     CardTitle,
 } from "@/components/ui/card"
@@ -18,7 +16,6 @@ import {
     AccordionTrigger,
 } from "@/components/ui/accordion"
 import { useState, useEffect } from 'react';
-
 import React from 'react'
 
 export default function page() {
@@ -222,7 +219,7 @@ export default function page() {
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-1">
                     <Accordion type="single" collapsible>
                         {stockData.map((item, index) => (
-                            <AccordionItem key={index} className="w-full">
+                            <AccordionItem value={item} key={index} className="w-full">
                                 <AccordionTrigger>
                                     <Card className="w-full">
                                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
