@@ -52,13 +52,12 @@ const userLogin = async (req, res, next) => {
             const token = await GenerateToken({
                 _id: existingUser._id,
                 email: existingUser.email,
-                name: existingUser.name,
-                foodTypes: existingUser.foodType
+                name: existingUser.name
             });
 
             SetTokenCookie(res, token);
 
-            return res.status(200).json({ message: "Login Successful", existingUser });
+            return res.status(200).json({ message: "Login Successful", existingUser, token });
         } else {
             return res.status(400).json({
                 message:
@@ -73,7 +72,28 @@ const userLogin = async (req, res, next) => {
 
 }
 
+const getUserProfile = async (req, res, next) => {
+    try {
+        const user = req.user;
+
+        if (!user) {
+            return res.status(404).json({ message: "User Information not found" });
+        }
+
+        const userDetails = await FindUser(user._id, '');
+        if (!userDetails) {
+            return res.status(404).json({ message: "No such user Exists!" });
+        }
+        return res.status(200).json(userDetails);
+
+    } catch (error) {
+        console.error("Error fetching user info:", error);
+        return res.status(500).json({ message: "Internal Server Error" });
+    }
+}
+
 module.exports = {
     userSignup,
     userLogin,
+    getUserProfile,
 }
