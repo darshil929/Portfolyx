@@ -101,10 +101,10 @@ export const users = [
       label: "manage"
     },
     {
-      title: "Profile",
-      href: "/dashboard/profile",
+      title: "History",
+      href: "/dashboard/history",
       icon: "profile",
-      label: "profile"
+      label: "history"
     },
     {
       title: "Kanban",
