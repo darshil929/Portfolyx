@@ -92,8 +92,29 @@ const getUserProfile = async (req, res, next) => {
     }
 }
 
+const updateWalletProfile = async (req, res, next) => {
+    const { walletmoney } = req.body;
+    try { 
+        const user = req.user;
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        // Update only the wallet money field
+        const existingUser = await User.findOne({_id : user._id});
+        
+        existingUser.wallet = walletmoney;
+        const savedResult = await existingUser.save();
+        return res.status(200).json({ message: "Money Added Successfully", savedResult });
+    } catch (error) {
+        console.error("Error updating wallet money:", error);
+        return res.status(500).json({ message: "Internal Server Error" });
+    }
+}
+
+
 module.exports = {
     userSignup,
     userLogin,
     getUserProfile,
+    updateWalletProfile
 }
