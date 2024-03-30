@@ -25,7 +25,7 @@ const GenerateToken = async (payload) => {
 
 const SetTokenCookie = (res, token) => {
 
-    return res.cookie("authToken", token, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 }); // Max age in milliseconds (1 day)
+    return res.cookie("authToken", token, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000, domain:"localhost"}); // Max age in milliseconds (1 day)
 };
 
 module.exports = {

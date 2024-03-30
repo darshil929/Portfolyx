@@ -1,3 +1,5 @@
+'use client'
+import {useState,useEffect} from "react"
 import { CalendarDateRangePicker } from "@/components/date-range-picker"
 import { Overview } from "@/components/overview"
 import { RecentSales } from "@/components/recent-sales"
@@ -11,14 +13,29 @@ import {
 } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useRouter } from "next/navigation";
 
 export default function page() {
+  const [user,setUser] = useState(null)
+  const router = useRouter();
+
+
+  useEffect(()=>{
+    fetch('http://localhost:8000/user/dashboard',{credentials: "include"}).then(response => { if (response.status != 200) {
+      console.log(response)
+      router.push('/login')
+    }
+  else{
+    return response.json()
+  }}).then(data => {console.log(data);setUser(data)}).catch(e => {console.log(e) })
+  },[])
+
   return (
     <ScrollArea className="h-full">
       <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
         <div className="flex items-center justify-between space-y-2">
           <h2 className="text-3xl font-bold tracking-tight">
-            Hi, User 👋
+            Hi, {user?.name} 👋
           </h2>
           <div className="hidden md:flex items-center space-x-2">
             <CalendarDateRangePicker />
@@ -28,7 +45,10 @@ export default function page() {
         <Tabs defaultValue="overview" className="space-y-4">
           <TabsList>
             <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="self">
+            {user?.portfolios.map((portfolio,index) => {<TabsTrigger key="index" value={portfolio} className="capitalize">
+              {portfolio}
+            </TabsTrigger>})}
+            {/* <TabsTrigger value="self">
               Self
             </TabsTrigger>
             <TabsTrigger value="portfolio-1">
@@ -36,14 +56,14 @@ export default function page() {
             </TabsTrigger>
             <TabsTrigger value="portfolio-2">
               Portfolio 2
-            </TabsTrigger>
+            </TabsTrigger> */}
           </TabsList>
           <TabsContent value="overview" className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
-                    Total Revenue
+                    Total Profit/Loss
                   </CardTitle>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
