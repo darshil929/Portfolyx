@@ -6,7 +6,7 @@ const { ETF } = require('../models/ETF');
 const addETFs = async (req, res, next) => {
     try {
         const data = [];
-        fs.createReadStream("C:/Users/Admin/Downloads/XHB.csv")
+        fs.createReadStream("C:/Users/Ritesh/Downloads/XLB.csv")
           .pipe(csv())
           .on('data', (row) => {
             // extracting data from the CSV row and push it into the array
@@ -24,9 +24,9 @@ const addETFs = async (req, res, next) => {
             try {
 
               // find or create the ETF document
-              let etf = await ETF.findOne({ name: 'XHB' });
+              let etf = await ETF.findOne({ name: 'XLB' });
               if (!etf) {
-                etf = await ETF.create({ name: 'XHB', data: [] });
+                etf = await ETF.create({ name: 'XLB', data: [] });
               }
               
               // appendin the data array to the existing data in the ETF document
