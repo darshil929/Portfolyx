@@ -1,4 +1,6 @@
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { CalendarDateRangePicker } from "@/components/date-range-picker"
+
 import {
   Card,
   CardContent,
@@ -36,46 +38,10 @@ export default function page() {
             <Input type="email" placeholder="Search for a stock" />
             <Button type="submit">Search</Button>
           </div>
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="outline" size="icon">
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
-              <DialogHeader>
-                <DialogTitle>Edit profile</DialogTitle>
-                <DialogDescription>
-                  Make changes to your profile here. Click save when you're done.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="name" className="text-right">
-                    Name
-                  </Label>
-                  <Input
-                    id="name"
-                    defaultValue="Pedro Duarte"
-                    className="col-span-3"
-                  />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="username" className="text-right">
-                    Username
-                  </Label>
-                  <Input
-                    id="username"
-                    defaultValue="@peduarte"
-                    className="col-span-3"
-                  />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button type="submit">Save changes</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+          <div className="hidden md:flex items-center space-x-2">
+            <CalendarDateRangePicker />
+            <Button>Download</Button>
+          </div>
         </div>
         <Card className="col-span-4 md:col-span-3 mt-8">
           <CardHeader>
