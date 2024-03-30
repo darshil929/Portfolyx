@@ -1,13 +1,12 @@
 const fs = require('fs');
 const csv = require('csv-parser');
 
-const { Stock } = require('../models/Stock');
+const { ETF } = require('../models/ETF');
 
-const addStocks = async (req, res, next) => {
+const addETFs = async (req, res, next) => {
     try {
         const data = [];
-
-        fs.createReadStream('C:/Users/Admin/Downloads/AAPL.csv')
+        fs.createReadStream("C:/Users/Admin/Downloads/XHB.csv")
           .pipe(csv())
           .on('data', (row) => {
             // extracting data from the CSV row and push it into the array
@@ -24,22 +23,22 @@ const addStocks = async (req, res, next) => {
           .on('end', async () => {
             try {
 
-              // find or create the stock document
-              let stock = await Stock.findOne({ shortName: 'AAPL' });
-              if (!stock) {
-                stock = await Stock.create({ shortName: 'AAPL', fullName: "Apple Inc.", data: [] });
+              // find or create the ETF document
+              let etf = await ETF.findOne({ name: 'XHB' });
+              if (!etf) {
+                etf = await ETF.create({ name: 'XHB', data: [] });
               }
               
-              // appendin the data array to the existing data in the stock document
-              stock.data = [...stock.data, ...data];
-              await stock.save();
+              // appendin the data array to the existing data in the ETF document
+              etf.data = [...etf.data, ...data];
+              await etf.save();
 
-              console.log('Stock data saved successfully');
+              console.log('ETF data saved successfully');
               console.log('CSV file successfully processed');
 
-              res.status(200).json({ message: 'Stock data saved successfully' });
+              res.status(200).json({ message: 'ETF data saved successfully' });
             } catch (error) {
-              console.error('Error saving stock data:', error);
+              console.error('Error saving ETF data:', error);
               res.status(500).json({ message: 'Internal Server Error 2 ' });
             }
           });
@@ -51,5 +50,6 @@ const addStocks = async (req, res, next) => {
 }
 
 module.exports = {
-    addStocks,
+    addETFs,
 }
+

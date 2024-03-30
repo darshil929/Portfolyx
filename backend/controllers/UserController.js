@@ -42,9 +42,9 @@ const userLogin = async (req, res, next) => {
     try {
         const existingUser = await User.findOne({ email: email });
         console.log(existingUser);
-        // if (existingUser !== null) {
-        //     return res.status(409).json({ message: "Login Credentials Invalid" })
-        // }
+        if (existingUser == null) {
+            return res.status(409).json({ message: "Login Credentials Invalid" })
+        }
 
         const validation = await ValidatePassword(password, existingUser.password);
         if (validation) {
@@ -58,9 +58,9 @@ const userLogin = async (req, res, next) => {
 
             SetTokenCookie(res, token);
 
-            return res.json({ message: "Login Successful", existingUser });
+            return res.status(200).json({ message: "Login Successful", existingUser });
         } else {
-            return res.json({
+            return res.status(400).json({
                 message:
                     "Invalid Password! Try Again"
             });

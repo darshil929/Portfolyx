@@ -17,7 +17,7 @@ const bodyParser = require("body-parser");
 const path = require("path");
 const cors = require("cors");
 
-const { UserRoutes, StockRoutes } = require("../routes");
+const { UserRoutes, StockRoutes, ETFRoutes } = require("../routes");
 
 module.exports = async function setupExpressApp(app) {
     app.use(cors());
@@ -26,6 +26,7 @@ module.exports = async function setupExpressApp(app) {
     
     app.use('/user', UserRoutes);
     app.use('/stock', StockRoutes);
+    app.use('/etf', ETFRoutes);
 
     return app;
 };

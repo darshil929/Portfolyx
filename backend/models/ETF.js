@@ -1,8 +1,7 @@
 const mongoose = require('mongoose');
 
-const stockSchema = new mongoose.Schema({
-    fullName: { type: String, required: true },
-    shortName: { type: String, required: true },
+const etfSchema = new mongoose.Schema({
+    name: { type: String, required: true },
     data: [{
         date: { type: Date, required: true },
         open: { type: Number, required: true },
@@ -14,6 +13,7 @@ const stockSchema = new mongoose.Schema({
     }]
 });
 
-const Stock = mongoose.model('stock', stockSchema);
+const ETF = mongoose.model('etf', etfSchema);
 
-module.exports = { Stock };
+module.exports = { ETF };
+
