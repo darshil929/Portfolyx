@@ -17,6 +17,8 @@ import { useRouter } from "next/navigation";
 
 export default function page() {
   const [user,setUser] = useState(null)
+  const [portfolios,setPortfolios] = useState(null)
+
   const router = useRouter();
 
 
@@ -28,7 +30,21 @@ export default function page() {
   else{
     return response.json()
   }}).then(data => {console.log(data);setUser(data)}).catch(e => {console.log(e) })
+
+
+  fetch('http://localhost:8000/user/portfolios',{credentials: "include"}).then(response => { if (response.status != 200) {
+    console.log(response);
+    router.push('/login')
+  }
+else{
+  return response.json()
+}}).then(data => {console.log(data);setPortfolios(data)}).catch(e => {console.log(e) })
+
+
   },[])
+
+
+
 
   return (
     <ScrollArea className="h-full">

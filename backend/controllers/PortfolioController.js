@@ -54,9 +54,9 @@ const getAllPortfolios = async (req, res, next) => {
         }
 
         const portfolios = await Portfolio.find({ userID: user._id });
-        if (portfolios.length == 0) {
-            return res.status(404).json({ message: "No Portfolios found!" });
-        }
+        // if (portfolios.length == 0) {
+        //     return res.status(404).json({ message: "No Portfolios found!" });
+        // }
 
         return res.status(200).json(portfolios);
 
