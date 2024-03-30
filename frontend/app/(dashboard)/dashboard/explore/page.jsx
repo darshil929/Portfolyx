@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/accordion"
 import { useState, useEffect } from 'react';
 import React from 'react'
+import LineChart from '../../../../components/line-chart'
 
 export default function page() {
     const [stockData, setStockData] = useState([]);
@@ -230,7 +231,7 @@ export default function page() {
                                         {[item.data[item.data.length - 1]].map((item, index) => (
                                         <CardContent key={index} className='flex justify-between'>
                                             <div className="flex w-1/3 justify-between">
-                                                <div className='w-1/2'>
+                                                <div className='w-1/2 flex-col items-start'>
                                                     <div className='mt-2'>
                                                         Open:<br/>{item.open}
                                                     </div>
@@ -238,7 +239,7 @@ export default function page() {
                                                         Close:<br/>{item.close}
                                                     </div>
                                                 </div>
-                                                <div className='w-1/2'>
+                                                <div className='w-1/2 flex-col items-start'>
                                                     <div className='mt-2 text-green-600'>
                                                         High:<br/>{item.high}
                                                     </div>
@@ -256,7 +257,7 @@ export default function page() {
                                     </Card>
                                 </AccordionTrigger>
                                 <AccordionContent>
-                                    Graph Here
+                                <LineChart data={item.data} />
                                 </AccordionContent>
                             </AccordionItem>
                         ))}
