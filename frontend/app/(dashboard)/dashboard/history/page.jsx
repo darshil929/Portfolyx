@@ -4,7 +4,6 @@ import { CalendarDateRangePicker } from "@/components/date-range-picker"
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle
 } from "@/components/ui/card"
@@ -12,18 +11,6 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { RecentSales } from "@/components/recent-sales"
-import { ChevronRight } from "lucide-react"
-import { Label } from "@/components/ui/label"
-
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
 import React from 'react'
 
 export default function page() {
