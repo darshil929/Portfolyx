@@ -70,7 +70,7 @@ const getAllStocks = async (req, res, next) => {
 const buyStock = async (req, res, next) => {
   try {
     const user = req.user;
-    const { stockID, portfolio_name, qty, investment_date } = req.body;
+    const { stockID, portfolio_name, qty } = req.body;
 
     if (!user) {
       return res.status(404).json({ message: "User Information not found" });
@@ -87,7 +87,7 @@ const buyStock = async (req, res, next) => {
     }
 
     // converting investment_date in proper Date format
-    const date = new Date(investment_date);
+    const date = new Date();
 
     // calculate the amount of money for the transaction
     const amount_money = qty * stock.data[stock.data.length - 1].close;

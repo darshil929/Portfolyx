@@ -4,5 +4,6 @@ module.exports = {
     ...require('./ETFController'),
     ...require('./Metrics'),
     ...require('./PortfolioController'),
+    ...require('./ETFController'),
 };
 
