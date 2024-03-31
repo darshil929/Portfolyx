@@ -75,7 +75,7 @@ const LineChart = ({ data }) => {
         return date;
     };
 
-    return <canvas style={{ width: '100%', height: 'auto', maxHeight: '400px' }} ref={chartRef} />;
+    return <canvas style={{ width: '100%', height: 'auto', maxHeight: '400px' }} ref={chartRef} id={'a'}/>;
 };
 
 export default LineChart;

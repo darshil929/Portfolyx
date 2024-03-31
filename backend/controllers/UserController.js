@@ -84,7 +84,9 @@ const getUserProfile = async (req, res, next) => {
         if (!userDetails) {
             return res.status(404).json({ message: "No such user Exists!" });
         }
-        return res.status(200).json(userDetails);
+
+        const fulluser = await userDetails.populate('portfolios');
+        return res.status(200).json(fulluser);
 
     } catch (error) {
         console.error("Error fetching user info:", error);
