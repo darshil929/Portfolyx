@@ -229,7 +229,7 @@ export default function page() {
                         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-1">
                             <Accordion type="single" collapsible>
                                 {stockData.map((item, index) => (
-                                    <AccordionItem value={item} key={index} className="w-full">
+                                    <AccordionItem value={item} key={index} className="w-2/3">
                                         <AccordionTrigger>
                                             <Card className="w-full">
                                                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -239,21 +239,21 @@ export default function page() {
                                                 </CardHeader>
                                                 {[item.data[item.data.length - 1]].map((item, index) => (
                                                     <CardContent key={index} className='flex justify-between'>
-                                                        <div className="flex w-1/3 justify-between">
+                                                        <div className="flex w-full justify-between">
                                                             <div className='w-1/2 flex-col items-start'>
                                                                 <div className='mt-2'>
-                                                                    Open:<br />{item.open}
+                                                                    Open: {item.open}
                                                                 </div>
                                                                 <div className='mt-2'>
-                                                                    Close:<br />{item.close}
+                                                                    Close: {item.close}
                                                                 </div>
                                                             </div>
                                                             <div className='w-1/2 flex-col items-start'>
                                                                 <div className='mt-2 text-green-600'>
-                                                                    High:<br />{item.high}
+                                                                    High: {item.high}
                                                                 </div>
                                                                 <div className='mt-2 text-red-600'>
-                                                                    Low:<br />{item.low}
+                                                                    Low: {item.low}
                                                                 </div>
                                                             </div>
                                                         </div>
