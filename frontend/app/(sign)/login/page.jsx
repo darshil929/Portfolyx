@@ -33,7 +33,7 @@ const login = () => {
     console.log();
     const response = await fetch("http://localhost:8000/user/login", {
       method: "POST",
-      withCredentials: true,
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
       },
@@ -51,12 +51,10 @@ const login = () => {
     let message = await response.json();
       console.log(message);
 
-      const cookies = response.headers.get("set-cookie");
-
-      // Set cookies
-      if (cookies) {
-        document.cookie = cookies;
-      }
+    //   // Set cookies
+    //   if (message) {
+    //     document.cookie = "authToken="+message.token;
+    //   }
       router.push("/dashboard");
     }
   };
