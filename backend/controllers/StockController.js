@@ -2,6 +2,7 @@ const fs = require('fs');
 const csv = require('csv-parser');
 
 const { Stock } = require('../models/Stock');
+const { Portfolio } = require('../models/Portfolio');
 
 const addStocks = async (req, res, next) => {
   try {
@@ -66,8 +67,58 @@ const getAllStocks = async (req, res, next) => {
   }
 }
 
+const buyStock = async (req, res, next) => {
+  try {
+    const user = req.user;
+    const { stockID, portfolio_name, qty, investment_date } = req.body;
+
+    if (!user) {
+      return res.status(404).json({ message: "User Information not found" });
+    }
+
+    const toUpdatePortfolio = await Portfolio.findOne({ userID: user._id, portfolio_name });
+    if (!toUpdatePortfolio) {
+      return res.status(404).json({ message: "No such portfolio exists!" });
+    }
+
+    const stock = await Stock.findById(stockID);
+    if (!stock) {
+      return res.status(404).json({ message: "Stock not found" });
+    }
+
+    // converting investment_date in proper Date format
+    const date = new Date(investment_date);
+
+    // calculate the amount of money for the transaction
+    const amount_money = qty * stock.data[stock.data.length - 1].close;
+
+    if (amount_money > toUpdatePortfolio.cash) {
+      return res.status(400).json({ message: "Insufficient cash in portfolio" });
+    }
+
+    // deduct the amount_money from the cash of the portfolio
+    toUpdatePortfolio.cash -= amount_money;
+
+    toUpdatePortfolio.stock.push({
+      stockID,
+      quantity: qty,
+      amount_money,
+      investment_date: date
+    });
+
+    const savedResult = await toUpdatePortfolio.save();
+
+    return res.status(200).json({ message: "Stock Purchased!", savedResult });
+
+  } catch (error) {
+    console.error('Error buying Stock:', error);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+}
+
 module.exports = {
   addStocks,
   getAllStocks,
+  buyStock,
 }
 
