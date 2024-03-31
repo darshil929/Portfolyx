@@ -6,7 +6,7 @@ const { ETF } = require('../models/ETF');
 const addETFs = async (req, res, next) => {
     try {
         const data = [];
-        fs.createReadStream("C:/Users/Ritesh/Downloads/XLV.csv")
+        fs.createReadStream("C:/Users/Ritesh/Downloads/XLU.csv")
           .pipe(csv())
           .on('data', (row) => {
             // extracting data from the CSV row and push it into the array
@@ -24,9 +24,9 @@ const addETFs = async (req, res, next) => {
             try {
 
               // find or create the ETF document
-              let etf = await ETF.findOne({ name: 'XLV' });
+              let etf = await ETF.findOne({ name: 'XLU' });
               if (!etf) {
-                etf = await ETF.create({ name: 'XLV', data: [] });
+                etf = await ETF.create({ name: 'XLU', data: [] });
               }
               
               // appendin the data array to the existing data in the ETF document
@@ -49,7 +49,25 @@ const addETFs = async (req, res, next) => {
     }
 }
 
+
+const getAllEtfs = async (req, res, next) => {
+  try {
+    const etfs = await ETF.find();
+
+    if (!etfs || etfs.length === 0) {
+      return res.status(404).json({ message: "etfs data Unavailable" });
+    }
+
+    return res.status(200).json(etfs);
+
+  } catch (error) {
+    console.error('Error getting Stock data:', error);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+}
+
 module.exports = {
     addETFs,
+    getAllEtfs
 }
 
