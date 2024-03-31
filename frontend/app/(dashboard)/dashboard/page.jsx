@@ -171,6 +171,40 @@ function getFullNameById(id) {
 
 
 
+function calculateCash() {
+  const profitLoss = [];
+  
+  user.portfolios.forEach(portfolio => {
+      portfolio.stock.forEach(userStock => {
+          const stock = stocks.find(stock => stock._id === userStock.stockID);
+          // console.log(stock)
+          if (stock) {
+              const currentStockValue = userStock.quantity * stock.data[stock.data.length - 1].close;
+              const initialStockValue =  userStock.amount_money;
+              const pl = currentStockValue - initialStockValue;
+              // console.log(stock.data[stock.data.length - 1])
+              profitLoss.push({
+                  stockID: userStock.stockID,
+                  fullName: stock.fullName,
+                  profitLoss: pl.toFixed(2)
+              });
+          }
+      });
+  });
+
+  
+
+  let totalProfitLoss = 0;
+  console.log(profitLoss)
+
+  profitLoss.forEach(item => {
+  totalProfitLoss += parseFloat(item.profitLoss);
+  
+});
+  // console.log(totalProfitLoss)
+  return totalProfitLoss.toFixed(2);
+}
+
 function calculateProfitLossInd(portfolio) {
   console.log(portfolio )
   const profitLoss = [];
