@@ -16,19 +16,38 @@ import {
     AccordionTrigger,
 } from "@/components/ui/accordion"
 
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog"
+
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 import { useState, useEffect } from 'react';
 import React from 'react'
 import LineChart from '../../../../components/line-chart'
+import { data } from 'autoprefixer'
 
 export default function page() {
     const [stockData, setStockData] = useState([]);
+    const [etfData, setEtfData] = useState([]);
+    const [stockPortfolioName, setStockPortfolioName] = useState('');
+    const [etfPortfolioName, setEtfPortfolioName] = useState('');
+    const [stockQuantity, setStockQuantity] = useState('');
+    const [etfQuantity, setEtfQuantity] = useState('');
 
     useEffect(() => {
         async function fetchStockData() {
             try {
-                const response = await fetch('http://localhost:8000/stock');
+                const response = await fetch('http://localhost:8000/stock',{credentials: "include"});
                 if (!response.ok) {
                     throw new Error('Failed to fetch data');
                 }
@@ -41,7 +60,49 @@ export default function page() {
         fetchStockData();
     }, []);
 
-    // const uniqueNames = [...new Set(stockData.map(item => item.fullName))];
+    useEffect(() => {
+        async function fetchStockData() {
+            try {
+                const response = await fetch('http://localhost:8000/etf', {credentials: "include"});
+                if (!response.ok) {
+                    throw new Error('Failed to fetch data');
+                }
+                const data = await response.json();
+                const stockId = data._id
+                setEtfData(data);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        }
+        fetchStockData();
+    }, []);
+
+    const handleBuyStock = async (item) => {
+        try {
+            console.log(item)
+            const response = await fetch('http://localhost:8000/stock/buy-stock', {credentials: "include"},{
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    stockID: item,
+                    portfolio_name: stockPortfolioName,
+                    qty: stockQuantity,
+                    investment_date: '2024-03-31T03:53:14.063'
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to buy stock');
+            }
+
+            alert('Stock bought successfully');
+        } catch (error) {
+            console.error('Error buying stock:', error);
+        }
+    };
+
 
     return (
         <ScrollArea className="h-full">
@@ -65,7 +126,7 @@ export default function page() {
                             Gainers
                         </h2>
                         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                            <Card>
+                        <Card>
                                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                     <CardTitle className="text-sm font-medium">
                                         Total Revenue
@@ -229,7 +290,7 @@ export default function page() {
                         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-1">
                             <Accordion type="single" collapsible>
                                 {stockData.map((item, index) => (
-                                    <AccordionItem value={item} key={index} className="w-2/3">
+                                    <AccordionItem value={item} key={index} className="w-full">
                                         <AccordionTrigger>
                                             <Card className="w-full">
                                                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -258,7 +319,49 @@ export default function page() {
                                                             </div>
                                                         </div>
                                                         <div className="flex flex-col w-16">
-                                                            <Button variant="outline" className="bg-green-600 text-white">Buy</Button>
+                                                            <Dialog>
+                                                                <DialogTrigger asChild>
+                                                                    <Button variant="outline" className="bg-green-600 text-white">Buy</Button>
+                                                                </DialogTrigger>
+                                                                <DialogContent className="sm:max-w-[425px]">
+                                                                    <DialogHeader>
+                                                                        <DialogTitle>Buy</DialogTitle>
+                                                                        {/* <DialogDescription>
+                                                                            
+                                                                            Stock ID: {item._id}
+                                                                        </DialogDescription> */}
+                                                                    </DialogHeader>
+                                                                    <div className="grid gap-4 py-4">
+                                                                        <div className="grid grid-cols-3 items-center gap-4">
+                                                                            <Label htmlFor="name" className="text-left">
+                                                                                Portfolio Name:
+                                                                            </Label>
+                                                                            <Input
+                                                                                id="name"
+                                                                                placeholder='Enter portfolio name'
+                                                                                value={stockPortfolioName}
+                                                                                onChange={(e) => setStockPortfolioName(e.target.value)}
+                                                                                className="col-span-3"
+                                                                            />
+                                                                        </div>
+                                                                        <div className="grid grid-cols-3 items-center gap-4">
+                                                                            <Label htmlFor="quantity" className="text-left">
+                                                                                Quantity:
+                                                                            </Label>
+                                                                            <Input
+                                                                                id="quantity"
+                                                                                placeholder="Enter quantity"
+                                                                                value={stockQuantity}
+                                                                                onChange={(e) => setStockQuantity(e.target.value)}
+                                                                                className="col-span-3"
+                                                                            />
+                                                                        </div>
+                                                                    </div>
+                                                                    <DialogFooter>
+                                                                        <Button onClick={() => handleBuyStock(item._id)}>Buy</Button>
+                                                                    </DialogFooter>
+                                                                </DialogContent>
+                                                            </Dialog>
                                                             {/* <Button variant="outline" className="bg-red-600 text-white mt-2">Sell</Button> */}
                                                         </div>
                                                     </CardContent>
@@ -273,12 +376,100 @@ export default function page() {
                             </Accordion>
                         </div>
                     </TabsContent>
-                    <TabsContent value="stocks" className="space-y-4">
-                        
+                    <TabsContent value="etfs" className="space-y-4">
+                        <h2 className="text-2xl font-bold tracking-tight">
+                            ETFs
+                        </h2>
+                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-1">
+                            <Accordion type="single" collapsible>
+                                {etfData.map((item, index) => (
+                                    <AccordionItem value={item} key={index} className="w-full">
+                                        <AccordionTrigger>
+                                            <Card className="w-full">
+                                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                                    <CardTitle className="text-l font-medium">
+                                                        {item.name}
+                                                    </CardTitle>
+                                                </CardHeader>
+                                                {[item.data[item.data.length - 1]].map((item, index) => (
+                                                    <CardContent key={index} className='flex justify-between'>
+                                                        <div className="flex w-full justify-between">
+                                                            <div className='w-1/2 flex-col items-start'>
+                                                                <div className='mt-2'>
+                                                                    Open: {item.open}
+                                                                </div>
+                                                                <div className='mt-2'>
+                                                                    Close: {item.close}
+                                                                </div>
+                                                            </div>
+                                                            <div className='w-1/2 flex-col items-start'>
+                                                                <div className='mt-2 text-green-600'>
+                                                                    High: {item.high}
+                                                                </div>
+                                                                <div className='mt-2 text-red-600'>
+                                                                    Low: {item.low}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex flex-col w-16">
+                                                            <Dialog>
+                                                                <DialogTrigger asChild>
+                                                                    <Button variant="outline" className="bg-green-600 text-white">Buy</Button>
+                                                                </DialogTrigger>
+                                                                <DialogContent className="sm:max-w-[425px]">
+                                                                    <DialogHeader>
+                                                                        <DialogTitle>Buy</DialogTitle>
+                                                                        <DialogDescription>
+                                                                            ETF ID: {item._id}
+                                                                        </DialogDescription>
+                                                                    </DialogHeader>
+                                                                    <div className="grid gap-4 py-4">
+                                                                        <div className="grid grid-cols-3 items-center gap-4">
+                                                                            <Label htmlFor="name" className="text-left">
+                                                                                Portfolio Name:
+                                                                            </Label>
+                                                                            <Input
+                                                                                id="name"
+                                                                                placeholder='Enter portfolio name'
+                                                                                value={etfPortfolioName}
+                                                                                onChange={(e) => setEtfPortfolioName(e.target.value)}
+                                                                                className="col-span-3"
+                                                                            />
+                                                                        </div>
+                                                                        <div className="grid grid-cols-3 items-center gap-4">
+                                                                            <Label htmlFor="quantity" className="text-left">
+                                                                                Quantity:
+                                                                            </Label>
+                                                                            <Input
+                                                                                id="quantity"
+                                                                                placeholder="Enter quantity"
+                                                                                value={etfQuantity}
+                                                                                onChange={(e) => setEtfQuantity(e.target.value)}
+                                                                                className="col-span-3"
+                                                                            />
+                                                                        </div>
+                                                                    </div>
+                                                                    <DialogFooter>
+                                                                        <Button onClick={() => handleBuyEtf(item._id)}>Buy</Button>
+                                                                    </DialogFooter>
+                                                                </DialogContent>
+                                                            </Dialog>
+                                                            {/* <Button variant="outline" className="bg-red-600 text-white mt-2">Sell</Button> */}
+                                                        </div>
+                                                    </CardContent>
+                                                ))}
+                                            </Card>
+                                        </AccordionTrigger>
+                                        <AccordionContent>
+                                            <LineChart data={item.data} />
+                                        </AccordionContent>
+                                    </AccordionItem>
+                                ))}
+                            </Accordion>
+                        </div>
                     </TabsContent>
                 </Tabs>
             </div>
         </ScrollArea>
     )
 }
-
