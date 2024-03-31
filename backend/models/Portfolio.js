@@ -3,7 +3,10 @@ const mongoose = require('mongoose');
 const portfolioSchema = new mongoose.Schema({
     portfolio_name: { type: String, required: true },
     cash : {type : Number , required: true},
-    userID  : { type: String, required: true },
+    userID  : { 
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'user'
+    },
     stock: [{
         stockID: {
             type: mongoose.Schema.Types.ObjectId,
@@ -21,8 +24,8 @@ const portfolioSchema = new mongoose.Schema({
         quantity: { type: Number, required: true },
         amount_money: { type: Number, required: true },
         investment_date : { type: Date, required: true },
-    }]
-
+    }],
+    netWorth: { type : Number }
 });
 
 const Portfolio = mongoose.model('portfolio', portfolioSchema);
