@@ -106,12 +106,7 @@ export const users = [
       icon: "profile",
       label: "history"
     },
-    {
-      title: "Kanban",
-      href: "/dashboard/kanban",
-      icon: "kanban",
-      label: "kanban"
-    },
+    
     {
       title: "Login",
       href: "/",

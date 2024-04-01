@@ -80,8 +80,9 @@ export default function page() {
     const handleBuyStock = async (item) => {
         try {
             console.log(item)
-            const response = await fetch('http://localhost:8000/stock/buy-stock', {credentials: "include"},{
+            const response = await fetch('http://localhost:8000/stock/buy-stock',{
                 method: 'POST',
+                credentials: "include",
                 headers: {
                     'Content-Type': 'application/json'
                 },
@@ -89,6 +90,34 @@ export default function page() {
                     stockID: item,
                     portfolio_name: stockPortfolioName,
                     qty: stockQuantity,
+                    investment_date: '2024-03-31T03:53:14.063'
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to buy stock');
+            }
+
+            alert('Stock bought successfully');
+        } catch (error) {
+            console.error('Error buying stock:', error);
+        }
+    };
+
+
+    const handleBuyEtf = async (item) => {
+        try {
+            console.log(item)
+            const response = await fetch('http://localhost:8000/etf/buy-etf',{
+                method: 'POST',
+                credentials: "include",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    etfID: item,
+                    portfolio_name: etfPortfolioName,
+                    qty: etfQuantity,
                     investment_date: '2024-03-31T03:53:14.063'
                 })
             });
@@ -122,7 +151,7 @@ export default function page() {
                         <TabsTrigger value="etfs">ETFs</TabsTrigger>
                     </TabsList>
                     <TabsContent value="stocks" className="space-y-4">
-                        <h2 className="text-2xl font-bold tracking-tight text-green-600">
+                        {/* <h2 className="text-2xl font-bold tracking-tight text-green-600">
                             Gainers
                         </h2>
                         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -283,7 +312,7 @@ export default function page() {
                                     </p>
                                 </CardContent>
                             </Card>
-                        </div>
+                        </div> */}
                         <h2 className="text-2xl font-bold tracking-tight">
                             Stocks
                         </h2>
@@ -298,23 +327,23 @@ export default function page() {
                                                         {item.fullName}  ({item.shortName})
                                                     </CardTitle>
                                                 </CardHeader>
-                                                {[item.data[item.data.length - 1]].map((item, index) => (
+                                                {[item.data[item.data.length - 1]].map((iteme, index) => (
                                                     <CardContent key={index} className='flex justify-between'>
                                                         <div className="flex w-full justify-between">
                                                             <div className='w-1/2 flex-col items-start'>
                                                                 <div className='mt-2'>
-                                                                    Open: {item.open}
+                                                                    Open: {iteme.open}
                                                                 </div>
                                                                 <div className='mt-2'>
-                                                                    Close: {item.close}
+                                                                    Close: {iteme.close}
                                                                 </div>
                                                             </div>
                                                             <div className='w-1/2 flex-col items-start'>
                                                                 <div className='mt-2 text-green-600'>
-                                                                    High: {item.high}
+                                                                    High: {iteme.high}
                                                                 </div>
                                                                 <div className='mt-2 text-red-600'>
-                                                                    Low: {item.low}
+                                                                    Low: {iteme.low}
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -391,23 +420,23 @@ export default function page() {
                                                         {item.name}
                                                     </CardTitle>
                                                 </CardHeader>
-                                                {[item.data[item.data.length - 1]].map((item, index) => (
+                                                {[item.data[item.data.length - 1]].map((iteme, index) => (
                                                     <CardContent key={index} className='flex justify-between'>
                                                         <div className="flex w-full justify-between">
                                                             <div className='w-1/2 flex-col items-start'>
                                                                 <div className='mt-2'>
-                                                                    Open: {item.open}
+                                                                    Open: {iteme.open}
                                                                 </div>
                                                                 <div className='mt-2'>
-                                                                    Close: {item.close}
+                                                                    Close: {iteme.close}
                                                                 </div>
                                                             </div>
                                                             <div className='w-1/2 flex-col items-start'>
                                                                 <div className='mt-2 text-green-600'>
-                                                                    High: {item.high}
+                                                                    High: {iteme.high}
                                                                 </div>
                                                                 <div className='mt-2 text-red-600'>
-                                                                    Low: {item.low}
+                                                                    Low: {iteme.low}
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -420,7 +449,7 @@ export default function page() {
                                                                     <DialogHeader>
                                                                         <DialogTitle>Buy</DialogTitle>
                                                                         <DialogDescription>
-                                                                            ETF ID: {item._id}
+                                                                            ETF ID: {iteme._id}
                                                                         </DialogDescription>
                                                                     </DialogHeader>
                                                                     <div className="grid gap-4 py-4">

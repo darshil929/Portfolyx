@@ -5,6 +5,19 @@ import { CalendarDateRangePicker } from "@/components/date-range-picker"
 import { Overview } from "@/components/overview"
 import { RecentSales } from "@/components/recent-sales"
 import { Button } from "@/components/ui/button"
+import LineChart from '@/components/line-chart'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import {
   Card,
   CardContent,
@@ -20,7 +33,9 @@ export default function page() {
   const [user,setUser] = useState(null)
   const [rdata,setRdata] = useState([])
   const [activeTab, setActiveTab] = useState('overview');
-
+  const [stockPortfolioName, setStockPortfolioName] = useState('');
+  const [stockQuantity, setStockQuantity] = useState('');
+  const [update, setUpdate] = useState(0);
 
   const [pnl,setPnl] = useState(0)
 
@@ -49,7 +64,7 @@ else{
 }}).then(data => {console.log(data);setStocks(data)}).catch(e => {console.log(e) })
 
 
-  },[])
+  },[update])
 
   function listStocks(user) {
     const stockList = [];
@@ -172,38 +187,57 @@ function getFullNameById(id) {
 
 
 function calculateCash() {
-  const profitLoss = [];
+  let profitLoss = 0;
   
   user.portfolios.forEach(portfolio => {
-      portfolio.stock.forEach(userStock => {
-          const stock = stocks.find(stock => stock._id === userStock.stockID);
-          // console.log(stock)
-          if (stock) {
-              const currentStockValue = userStock.quantity * stock.data[stock.data.length - 1].close;
-              const initialStockValue =  userStock.amount_money;
-              const pl = currentStockValue - initialStockValue;
-              // console.log(stock.data[stock.data.length - 1])
-              profitLoss.push({
-                  stockID: userStock.stockID,
-                  fullName: stock.fullName,
-                  profitLoss: pl.toFixed(2)
-              });
-          }
-      });
+    profitLoss += parseFloat(portfolio.cash)
   });
 
   
-
-  let totalProfitLoss = 0;
-  console.log(profitLoss)
-
-  profitLoss.forEach(item => {
-  totalProfitLoss += parseFloat(item.profitLoss);
-  
-});
-  // console.log(totalProfitLoss)
-  return totalProfitLoss.toFixed(2);
+  return profitLoss.toFixed(2);
 }
+
+const timeDiff = (t1)=> {
+  const timestamp1 = new Date(t1);
+  console.log(timestamp1,t1)
+  const timestamp2 = new Date("2024-03-28T00:00:00.000+00:00"); 
+  
+const differenceInMilliseconds = Math.abs(timestamp2 - timestamp1);
+// Convert milliseconds to years
+const millisecondsInYear = 1000 * 60 * 60 * 24 * 365.25; // Consider leap years
+const differenceInYears = differenceInMilliseconds / millisecondsInYear;
+console.log(differenceInMilliseconds)
+
+// Round to two decimal places
+const roundedDifferenceInYears = Math.round(differenceInYears * 100) / 100;
+
+return  roundedDifferenceInYears
+}
+
+const cagr = (portfolio) => {
+  if (portfolio.stock.length >0) {
+  const diff = timeDiff(portfolio.stock[0].investment_date)
+  let initial = 0
+  let final = 0
+  portfolio.stock.forEach(userStock => {
+    const stock = stocks.find(stock => stock._id === userStock.stockID);
+    // console.log(stock)
+    if (stock) {
+      final  += userStock.quantity * stock.data[stock.data.length - 1].close;
+      initial +=  userStock.amount_money;
+    }
+});
+
+console.log(initial,final,diff)
+
+  const cagrs = Math.pow(final / initial, 1 / diff) - 1;
+
+  return cagrs.toFixed(2)
+}
+return 0
+}
+
+
 
 function calculateProfitLossInd(portfolio) {
   console.log(portfolio )
@@ -244,6 +278,32 @@ const handleTabClick = (index) => {
 };
 
 
+const addPortfolio = async () => {
+  try {
+    const response = await fetch('http://localhost:8000/user/add-portfolio',{
+        method: 'POST',
+        credentials: "include",
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            portfolio_name: stockPortfolioName,
+            cash: stockQuantity,
+        })
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to add');
+    }
+
+    alert('Portfolio created successfully');
+    setUpdate(update+1)
+} catch (error) {
+    console.error('Error adding Portfolio:', error);
+}
+
+}
+
 
   return (
     <ScrollArea className="h-full">
@@ -254,7 +314,50 @@ const handleTabClick = (index) => {
           </h2>
           <div className="hidden md:flex items-center space-x-2">
             <CalendarDateRangePicker />
-            <Button>+ Create</Button>
+            <Dialog>
+                                                                <DialogTrigger asChild>
+                                                                    <Button variant="outline" className="bg-green-600 text-white">+ Portfolio</Button>
+                                                                </DialogTrigger>
+                                                                <DialogContent className="sm:max-w-[425px]">
+                                                                    <DialogHeader>
+                                                                        <DialogTitle>Add Portfolio</DialogTitle>
+                                                                        {/* <DialogDescription>
+                                                                            
+                                                                            Stock ID: {item._id}
+                                                                        </DialogDescription> */}
+                                                                    </DialogHeader>
+                                                                    <div className="grid gap-4 py-4">
+                                                                        <div className="grid grid-cols-3 items-center gap-4">
+                                                                            <Label htmlFor="name" className="text-left">
+                                                                                Portfolio Name:
+                                                                            </Label>
+                                                                            <Input
+                                                                                id="name"
+                                                                                placeholder='Enter portfolio name'
+                                                                                value={stockPortfolioName}
+                                                                                onChange={(e) => setStockPortfolioName(e.target.value)}
+                                                                                className="col-span-3"
+                                                                            />
+                                                                        </div>
+                                                                        <div className="grid grid-cols-3 items-center gap-4">
+                                                                            <Label htmlFor="quantity" className="text-left">
+                                                                                Cash:
+                                                                            </Label>
+                                                                            <Input
+                                                                                id="quantity"
+                                                                                placeholder="Enter cash"
+                                                                                value={stockQuantity}
+                                                                                onChange={(e) => setStockQuantity(e.target.value)}
+                                                                                className="col-span-3"
+                                                                            />
+                                                                        </div>
+                                                                    </div>
+                                                                    <DialogFooter>
+                                                                        <Button onClick={() => addPortfolio()}>Add</Button>
+                                                                    </DialogFooter>
+                                                                </DialogContent>
+                                                            </Dialog>
+            {/* <Button onClick={addPortfolio}>+ Create</Button> */}
           </div>
         </div>
         <Tabs defaultValue="overview" className="space-y-4">
@@ -274,7 +377,7 @@ const handleTabClick = (index) => {
             </TabsTrigger> */}
           </TabsList>
           <TabsContent value="overview" className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
@@ -295,9 +398,9 @@ const handleTabClick = (index) => {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">${pnl}</div>
-                  <p className="text-xs text-muted-foreground">
+                  {/* <p className="text-xs text-muted-foreground">
                     +20.1% from last month
-                  </p>
+                  </p> */}
                 </CardContent>
               </Card>
               <Card>
@@ -322,136 +425,9 @@ const handleTabClick = (index) => {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">25%</div>
-                  <p className="text-xs text-muted-foreground">
+                  {/* <p className="text-xs text-muted-foreground">
                     +180.1% from last month
-                  </p>
-                </CardContent>
-              </Card>
-              <Card>  
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Sales</CardTitle>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    className="h-4 w-4 text-muted-foreground"
-                  >
-                    <rect width="20" height="14" x="2" y="5" rx="2" />
-                    <path d="M2 10h20" />
-                  </svg>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">+12,234</div>
-                  <p className="text-xs text-muted-foreground">
-                    +19% from last month
-                  </p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    Active Now
-                  </CardTitle>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    className="h-4 w-4 text-muted-foreground"
-                  >
-                    <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-                  </svg>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">+573</div>
-                  <p className="text-xs text-muted-foreground">
-                    +201 since last hour
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-            <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-7">
-              <Card className="col-span-4">
-                <CardHeader>
-                  <CardTitle>Overview</CardTitle>
-                </CardHeader>
-                <CardContent className="pl-2">
-                  <Overview />
-                </CardContent>
-              </Card>
-              <Card className="col-span-4 md:col-span-3">
-                <CardHeader>
-                  <CardTitle>All Stocks Composition</CardTitle>
-                  <CardDescription>
-                  Composition of Stocks in each Portfolio
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                {activeTab == "overview" ? <canvas ref={pieChartRef}  id="myChart" /> : null}
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-          
-          {user && stocks &&  user?.portfolios.map((portfolio,index) =>  <TabsContent value={portfolio.portfolio_name} key={index} className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    Total Profit/Loss
-                  </CardTitle>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    className="h-4 w-4 text-muted-foreground"
-                  >
-                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                  </svg>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">${calculateProfitLossInd(portfolio)}</div>
-                  <p className="text-xs text-muted-foreground">
-                    +20.1% from last month
-                  </p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    CAGR
-                  </CardTitle>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    className="h-4 w-4 text-muted-foreground"
-                  >
-                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                    <circle cx="9" cy="7" r="4" />
-                    <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
-                  </svg>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">25%</div>
-                  <p className="text-xs text-muted-foreground">
-                    +180.1% from last month
-                  </p>
+                  </p> */}
                 </CardContent>
               </Card>
               <Card>  
@@ -472,13 +448,13 @@ const handleTabClick = (index) => {
                   </svg>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{portfolio.cash.toFixed(2)}</div>
-                  <p className="text-xs text-muted-foreground">
+                  <div className="text-2xl font-bold">${user&&calculateCash()}</div>
+                  {/* <p className="text-xs text-muted-foreground">
                     +19% from last month
-                  </p>
+                  </p> */}
                 </CardContent>
               </Card>
-              <Card>
+              {/* <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
                     Active Now
@@ -502,15 +478,148 @@ const handleTabClick = (index) => {
                     +201 since last hour
                   </p>
                 </CardContent>
-              </Card>
+              </Card> */}
             </div>
             <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-7">
               <Card className="col-span-4">
                 <CardHeader>
-                  <CardTitle>Overview</CardTitle>
+                  <CardTitle>Top Performing Stock</CardTitle>
+                  <p className="text-xs text-muted-foreground">
+                    {stocks&& stocks[0].fullName}
+                  </p>
                 </CardHeader>
                 <CardContent className="pl-2">
-                  <Overview />
+                {stocks && <LineChart data={stocks[0].data} />}
+                </CardContent>
+              </Card>
+              <Card className="col-span-4 md:col-span-3">
+                <CardHeader>
+                  <CardTitle>All Stocks Composition</CardTitle>
+                  <CardDescription>
+                  Composition of Stocks in each Portfolio
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                {activeTab == "overview" ? <canvas ref={pieChartRef}  id="myChart" /> : null}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+          
+          {user && stocks &&  user?.portfolios.map((portfolio,index) =>  <TabsContent value={portfolio.portfolio_name} key={index} className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    Total Profit/Loss
+                  </CardTitle>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    className="h-4 w-4 text-muted-foreground"
+                  >
+                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                  </svg>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">${calculateProfitLossInd(portfolio)}</div>
+                  {/* <p className="text-xs text-muted-foreground">
+                    +20.1% from last month
+                  </p> */}
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    CAGR
+                  </CardTitle>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    className="h-4 w-4 text-muted-foreground"
+                  >
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+                  </svg>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{cagr(portfolio)}</div>
+                  {/* <p className="text-xs text-muted-foreground">
+                    +180.1% from last month
+                  </p> */}
+                </CardContent>
+              </Card>
+              <Card>  
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Cash</CardTitle>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    className="h-4 w-4 text-muted-foreground"
+                  >
+                    <rect width="20" height="14" x="2" y="5" rx="2" />
+                    <path d="M2 10h20" />
+                  </svg>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">${portfolio.cash.toFixed(2)}</div>
+                  {/* <p className="text-xs text-muted-foreground">
+                    +19% from last month
+                  </p> */}
+                </CardContent>
+              </Card>
+              {/* <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    Active Now
+                  </CardTitle>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    className="h-4 w-4 text-muted-foreground"
+                  >
+                    <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                  </svg>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">+573</div>
+                  <p className="text-xs text-muted-foreground">
+                    +201 since last hour
+                  </p>
+                </CardContent>
+              </Card> */}
+            </div>
+            <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-7">
+              <Card className="col-span-4">
+              <CardHeader>
+                  <CardTitle>Top Performing Stock</CardTitle>
+                  <p className="text-xs text-muted-foreground">
+                    {stocks&& portfolio.stock.length   && stocks.find(stock => stock._id == portfolio.stock[0].stockID).fullName}
+                  </p>
+                </CardHeader>
+                <CardContent className="pl-2">
+                {stocks && portfolio.stock.length && <LineChart data={stocks.find(stock => stock._id == portfolio.stock[0].stockID).data} />}
                 </CardContent>
               </Card>
               <Card className="col-span-4 md:col-span-3">

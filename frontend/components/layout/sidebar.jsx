@@ -18,10 +18,10 @@ import { Button } from "../ui/button"
 
 
 
-export default function Sidebar() {
+export default function Sidebar({wallet}) {
 
 
-    const [goal, setGoal] = React.useState(350)
+    const [goal, setGoal] = React.useState(wallet)
   
     function onClick(adjustment) {
       setGoal(Math.max(200, Math.min(10000, goal + adjustment)))
