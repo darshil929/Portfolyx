@@ -3,4 +3,6 @@ module.exports = {
     ...require('./stockRoutes'),
     ...require('./etfRoutes'),
     ...require('./PortfolioRoutes'),
+    ...require('./marketRoutes'),
+    ...require('./portfolioRoutes'),
 }

@@ -1,4 +1,5 @@
 const axios = require('axios');
+const yahooFinance = require('yahoo-finance2').default;
 const { ALPHA_VANTAGE_API_KEY } = require('../config');
 
 const cache = new Map();
@@ -123,6 +124,100 @@ const clearCache = () => {
     console.log('Cache cleared successfully');
 };
 
+const fetchEtfHoldings = async (symbol) => {
+    try {
+        if (!symbol || typeof symbol !== 'string') {
+            throw new Error('Invalid ETF symbol provided');
+        }
+
+        const normalizedSymbol = symbol.toUpperCase().trim();
+        const cacheKey = `etf_holdings_${normalizedSymbol}`;
+        
+        const cachedData = cache.get(cacheKey);
+        
+        if (cachedData && isCacheValid(cachedData)) {
+            console.log(`Cache hit for ETF holdings: ${normalizedSymbol}`);
+            return {
+                symbol: normalizedSymbol,
+                data: cachedData.data,
+                source: 'cache',
+                timestamp: cachedData.timestamp
+            };
+        }
+
+        console.log(`Cache miss for ETF holdings: ${normalizedSymbol}`);
+        console.log(`Fetching ETF holdings from Yahoo Finance for symbol: ${normalizedSymbol}`);
+        
+        const quoteSummary = await yahooFinance.quoteSummary(normalizedSymbol, {
+            modules: ['fundProfile', 'topHoldings', 'fundPerformance']
+        });
+
+        if (!quoteSummary) {
+            throw new Error(`No data found for ETF symbol: ${normalizedSymbol}`);
+        }
+
+        const fundProfile = quoteSummary.fundProfile;
+        const topHoldings = quoteSummary.topHoldings;
+        const fundPerformance = quoteSummary.fundPerformance;
+
+        const transformedData = {
+            symbol: normalizedSymbol,
+            fundInfo: {
+                categoryName: fundProfile?.categoryName || 'N/A',
+                family: fundProfile?.family || 'N/A',
+                investmentStrategy: fundProfile?.investmentStrategy || 'N/A',
+                managementInfo: fundProfile?.managementInfo || {},
+                feesExpensesInvestment: fundProfile?.feesExpensesInvestment || {}
+            },
+            holdings: {
+                cashPosition: topHoldings?.cashPosition || 0,
+                stockPosition: topHoldings?.stockPosition || 0,
+                bondPosition: topHoldings?.bondPosition || 0,
+                holdings: (topHoldings?.holdings || []).slice(0, 20).map(holding => ({
+                    symbol: holding.symbol || 'N/A',
+                    holdingName: holding.holdingName || 'N/A',
+                    holdingPercent: holding.holdingPercent || 0
+                })),
+                sectorWeightings: topHoldings?.sectorWeightings || [],
+                bondRatings: topHoldings?.bondRatings || []
+            },
+            performance: {
+                performanceOverview: fundPerformance?.performanceOverview || {},
+                trailingReturns: fundPerformance?.trailingReturns || {},
+                annualTotalReturns: fundPerformance?.annualTotalReturns || {}
+            },
+            source: 'yahoo_finance',
+            timestamp: Date.now()
+        };
+
+        cache.set(cacheKey, {
+            data: transformedData,
+            timestamp: Date.now()
+        });
+
+        console.log(`Successfully cached ETF holdings for symbol: ${normalizedSymbol}`);
+        
+        return transformedData;
+
+    } catch (error) {
+        console.error(`Error fetching ETF holdings for symbol ${symbol}:`, error.message);
+        
+        if (error.message.includes('Invalid symbol')) {
+            throw error;
+        }
+        
+        if (error.message.includes('No data found')) {
+            throw new Error(`ETF symbol not found: ${symbol}`);
+        }
+        
+        if (error.code === 'ECONNABORTED' || error.code === 'ENOTFOUND') {
+            throw new Error('Network error: Unable to connect to Yahoo Finance');
+        }
+        
+        throw new Error(`Failed to fetch ETF holdings: ${error.message}`);
+    }
+};
+
 const getCacheStats = () => {
     const stats = {
         totalEntries: cache.size,
@@ -143,6 +238,7 @@ const getCacheStats = () => {
 
 module.exports = {
     fetchStockTimeSeries,
+    fetchEtfHoldings,
     clearCache,
     getCacheStats
 };

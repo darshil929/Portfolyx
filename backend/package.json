@@ -23,7 +23,10 @@
     "csv-parser": "^3.0.0",
     "dotenv": "^17.2.1",
     "express": "^4.19.2",
+    "json2csv": "^6.0.0-alpha.2",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.2.4"
+    "mongoose": "^8.2.4",
+    "multer": "^2.0.2",
+    "yahoo-finance2": "^2.13.3"
   }
 }

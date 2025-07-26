@@ -18,7 +18,7 @@ const path = require("path");
 const cors = require("cors");
 const cookieParser = require("cookie-parser")
 
-const { UserRoutes, StockRoutes , ETFRoutes, PortfolioRoutes } = require("../routes");
+const { UserRoutes, StockRoutes , ETFRoutes, PortfolioRoutes, MarketRoutes, PortfolioExportRoutes } = require("../routes");
 
 module.exports = async function setupExpressApp(app) {
     app.use(
@@ -42,6 +42,8 @@ module.exports = async function setupExpressApp(app) {
     app.use('/stock', StockRoutes);
     app.use('/etf', ETFRoutes);
     app.use('/user', PortfolioRoutes);
+    app.use('/api/market', MarketRoutes);
+    app.use('/api/portfolio', PortfolioExportRoutes);
 
     return app;
 };
