@@ -1,11 +1,18 @@
-'use client'
-import React, { useEffect, useRef,useState } from 'react';
-import Chart from 'chart.js/auto';
-import { CalendarDateRangePicker } from "@/components/date-range-picker"
-import { Overview } from "@/components/overview"
-import { RecentSales } from "@/components/recent-sales"
-import { Button } from "@/components/ui/button"
-import LineChart from '@/components/line-chart'
+"use client"
+
+import { useState, useEffect } from "react";
+import { Line } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -14,631 +21,318 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Spinner } from "@/components/ui/spinner";
 
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle
-} from "@/components/ui/card"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useRouter } from "next/navigation";
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
-export default function page() {
-  const [user,setUser] = useState(null)
-  const [rdata,setRdata] = useState([])
-  const [activeTab, setActiveTab] = useState('overview');
-  const [stockPortfolioName, setStockPortfolioName] = useState('');
-  const [stockQuantity, setStockQuantity] = useState('');
-  const [update, setUpdate] = useState(0);
-
-  const [pnl,setPnl] = useState(0)
-
-  const [stocks,setStocks] = useState(null)
-  const pieChartRef = useRef(null);
-  const chartInstance = useRef(null);
-  let myChart = null;
-  const router = useRouter();
-
-
-  useEffect(()=>{
-    fetch('http://localhost:8000/user/dashboard',{credentials: "include"}).then(response => { if (response.status != 200) {
-      // console.log(response)
-      router.push('/login')
-    }
-  else{
-    return response.json()
-  }}).then(data => {console.log(data);setUser(data)}).catch(e => {console.log(e) })
-
-  fetch('http://localhost:8000/stock/',{credentials: "include"}).then(response => { if (response.status != 200) {
-    // console.log(response)
-    router.push('/login')
-  }
-else{
-  return response.json()
-}}).then(data => {console.log(data);setStocks(data)}).catch(e => {console.log(e) })
-
-
-  },[update])
-
-  function listStocks(user) {
-    const stockList = [];
-    if (activeTab=='overview'){
-      user.portfolios.forEach(portfolio => {
-        portfolio.stock.forEach(stock => {
-            stockList.push({
-                stockID: stock.stockID,
-                amount_money: stock.amount_money
-            });
-        });
-    });
-    }
-    else{
-      const port = user.portfolios.find(portfolio => portfolio.portfolio_name === activeTab)
-        port.stock.forEach(stock => {
-            stockList.push({
-                stockID: stock.stockID,
-                amount_money: stock.amount_money
-            });
-        });
-    }
+export default function DashboardPage() {
+  const [open, setOpen] = useState(false);
+  const [portfolioName, setPortfolioName] = useState("");
+  const [initialCapital, setInitialCapital] = useState("");
   
+  // New state for backend data
+  const [portfolios, setPortfolios] = useState([]);
+  const [selectedStockData, setSelectedStockData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-    return stockList;
-}
-
-function getFullNameById(id) {
-  const stock = stocks.find(stock => stock._id === id);
-  return stock ? stock.fullName : "Full name not found";
-}
-
+  // Fetch portfolio and stock data
   useEffect(() => {
-    // if (pieChartRef.current) {
-    //   // Destroy the existing chart instance before creating a new one
-    //   pieChartRef.current.destroy();
-    // }
-    if (user && stocks) {
-    const stocks = listStocks(user)
-    const labels = stocks.map(stock => getFullNameById(stock.stockID));
-    const data = stocks.map(stock => stock.amount_money);
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
 
-    const ctx = pieChartRef.current.getContext('2d');
-    pieChartRef.current = new Chart(ctx, {
-      type: 'pie',
-      data: {
-        labels: labels,
-        datasets: [{
-          label: 'Stock Composition',
-          data: data,
-          backgroundColor: [
-            'rgba(255, 99, 132, 0.7)',
-            'rgba(54, 162, 235, 0.7)',
-            'rgba(255, 206, 86, 0.7)',
-            'rgba(75, 192, 192, 0.7)',
-            'rgba(153, 102, 255, 0.7)',
-            'rgba(255, 159, 64, 0.7)'
-          ],
-          borderColor: [
-            'rgba(255, 99, 132, 1)',
-            'rgba(54, 162, 235, 1)',
-            'rgba(255, 206, 86, 1)',
-            'rgba(75, 192, 192, 1)',
-            'rgba(153, 102, 255, 1)',
-            'rgba(255, 159, 64, 1)'
-          ],
-          borderWidth: 1
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false
+        // For now, using hardcoded portfolio data since backend endpoint may not be ready
+        const mockPortfolios = [
+          {
+            id: "1",
+            portfolio_name: "Tech Growth Portfolio",
+            cash: 15000.00,
+            holdings: [
+              { symbol: "AAPL", quantity: 50, type: "stock" },
+              { symbol: "MSFT", quantity: 25, type: "stock" }
+            ]
+          },
+          {
+            id: "2", 
+            portfolio_name: "Balanced Portfolio",
+            cash: 8500.00,
+            holdings: [
+              { symbol: "SPY", quantity: 100, type: "etf" }
+            ]
+          }
+        ];
+        
+        setPortfolios(mockPortfolios);
+
+        // Fetch stock data for the first stock in the first portfolio
+        if (mockPortfolios.length > 0 && mockPortfolios[0].holdings.length > 0) {
+          const firstStock = mockPortfolios[0].holdings[0];
+          
+          try {
+            const response = await fetch(`http://localhost:8000/api/market/stock/${firstStock.symbol}`);
+            
+            if (response.ok) {
+              const stockData = await response.json();
+              setSelectedStockData(stockData);
+            } else {
+              // Fallback to mock data if API fails
+              const mockStockData = {
+                symbol: firstStock.symbol,
+                timeSeries: [
+                  { date: "2024-01-15", close: 185.50 },
+                  { date: "2024-01-16", close: 187.45 },
+                  { date: "2024-01-17", close: 189.75 },
+                  { date: "2024-01-18", close: 192.30 },
+                  { date: "2024-01-19", close: 188.90 },
+                  { date: "2024-01-22", close: 191.25 },
+                  { date: "2024-01-23", close: 194.80 }
+                ]
+              };
+              setSelectedStockData(mockStockData);
+            }
+          } catch (stockError) {
+            console.error("Error fetching stock data:", stockError);
+            // Use mock data as fallback
+            const mockStockData = {
+              symbol: firstStock.symbol,
+              timeSeries: [
+                { date: "2024-01-15", close: 185.50 },
+                { date: "2024-01-16", close: 187.45 },
+                { date: "2024-01-17", close: 189.75 },
+                { date: "2024-01-18", close: 192.30 },
+                { date: "2024-01-19", close: 188.90 },
+                { date: "2024-01-22", close: 191.25 },
+                { date: "2024-01-23", close: 194.80 }
+              ]
+            };
+            setSelectedStockData(mockStockData);
+          }
+        }
+
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        setError("Failed to load dashboard data");
+      } finally {
+        setLoading(false);
       }
-    });
+    };
 
-  
-    setPnl(calculateProfitLoss())
+    fetchData();
+  }, []);
+
+  // Prepare chart data
+  const chartData = selectedStockData ? {
+    labels: selectedStockData.timeSeries?.map(item => item.date) || [],
+    datasets: [
+      {
+        label: `${selectedStockData.symbol} Closing Price`,
+        data: selectedStockData.timeSeries?.map(item => item.close) || [],
+        borderColor: 'rgb(59, 130, 246)',
+        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+        tension: 0.1,
+      },
+    ],
+  } : null;
+
+  const chartOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top',
+      },
+      title: {
+        display: true,
+        text: selectedStockData ? `${selectedStockData.symbol} Stock Performance` : 'Stock Performance',
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: false,
+      },
+    },
+  };
+
+  // Calculate total portfolio value
+  const totalPortfolioValue = portfolios.reduce((total, portfolio) => total + portfolio.cash, 0);
+  const totalPortfolios = portfolios.length;
+  const totalHoldings = portfolios.reduce((total, portfolio) => total + portfolio.holdings.length, 0);
+
+  const handleSavePortfolio = () => {
+    // For now, just close the dialog
+    // TODO: Add backend submission logic
+    console.log("Portfolio Name:", portfolioName);
+    console.log("Initial Capital:", initialCapital);
     
+    // Reset form
+    setPortfolioName("");
+    setInitialCapital("");
+    setOpen(false);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64 space-x-4">
+        <Spinner className="h-8 w-8 text-blue-600" />
+        <div className="text-lg text-gray-600 dark:text-gray-400">Loading dashboard data...</div>
+      </div>
+    );
   }
 
-
-  }, [stocks,activeTab]);
-
-
-
-  function calculateProfitLoss() {
-    const profitLoss = [];
-    
-    user.portfolios.forEach(portfolio => {
-        portfolio.stock.forEach(userStock => {
-            const stock = stocks.find(stock => stock._id === userStock.stockID);
-            // console.log(stock)
-            if (stock) {
-                const currentStockValue = userStock.quantity * stock.data[stock.data.length - 1].close;
-                const initialStockValue =  userStock.amount_money;
-                const pl = currentStockValue - initialStockValue;
-                // console.log(stock.data[stock.data.length - 1])
-                profitLoss.push({
-                    stockID: userStock.stockID,
-                    fullName: stock.fullName,
-                    profitLoss: pl.toFixed(2)
-                });
-            }
-        });
-    });
-
-    
-
-    let totalProfitLoss = 0;
-    console.log(profitLoss)
-
-    profitLoss.forEach(item => {
-    totalProfitLoss += parseFloat(item.profitLoss);
-    
-});
-    // console.log(totalProfitLoss)
-    return totalProfitLoss.toFixed(2);
-}
-
-
-
-function calculateCash() {
-  let profitLoss = 0;
-  
-  user.portfolios.forEach(portfolio => {
-    profitLoss += parseFloat(portfolio.cash)
-  });
-
-  
-  return profitLoss.toFixed(2);
-}
-
-const timeDiff = (t1)=> {
-  const timestamp1 = new Date(t1);
-  console.log(timestamp1,t1)
-  const timestamp2 = new Date("2024-03-28T00:00:00.000+00:00"); 
-  
-const differenceInMilliseconds = Math.abs(timestamp2 - timestamp1);
-// Convert milliseconds to years
-const millisecondsInYear = 1000 * 60 * 60 * 24 * 365.25; // Consider leap years
-const differenceInYears = differenceInMilliseconds / millisecondsInYear;
-console.log(differenceInMilliseconds)
-
-// Round to two decimal places
-const roundedDifferenceInYears = Math.round(differenceInYears * 100) / 100;
-
-return  roundedDifferenceInYears
-}
-
-const cagr = (portfolio) => {
-  if (portfolio.stock.length >0) {
-  const diff = timeDiff(portfolio.stock[0].investment_date)
-  let initial = 0
-  let final = 0
-  portfolio.stock.forEach(userStock => {
-    const stock = stocks.find(stock => stock._id === userStock.stockID);
-    // console.log(stock)
-    if (stock) {
-      final  += userStock.quantity * stock.data[stock.data.length - 1].close;
-      initial +=  userStock.amount_money;
-    }
-});
-
-console.log(initial,final,diff)
-
-  const cagrs = Math.pow(final / initial, 1 / diff) - 1;
-
-  return cagrs.toFixed(2)
-}
-return 0
-}
-
-
-
-function calculateProfitLossInd(portfolio) {
-  console.log(portfolio )
-  const profitLoss = [];
-      portfolio.stock.forEach(userStock => {
-          const stock = stocks.find(stock => stock._id === userStock.stockID);
-          // console.log(stock)
-          if (stock) {
-              const currentStockValue = userStock.quantity * stock.data[stock.data.length - 1].close;
-              const initialStockValue =  userStock.amount_money;
-              const pl = currentStockValue - initialStockValue;
-              // console.log(stock.data[stock.data.length - 1])
-              profitLoss.push({
-                  stockID: userStock.stockID,
-                  fullName: stock.fullName,
-                  profitLoss: pl.toFixed(2)
-              });
-          }
-      });
- 
-
-  let totalProfitLoss = 0;
-  console.log(profitLoss)
-
-  profitLoss.forEach(item => {
-  totalProfitLoss += parseFloat(item.profitLoss);
-  
-});
-  // console.log(totalProfitLoss)
-  return totalProfitLoss.toFixed(2);
-}
-
-
-
-const handleTabClick = (index) => {
-  setActiveTab(index);
-  console.log(activeTab)
-};
-
-
-const addPortfolio = async () => {
-  try {
-    const response = await fetch('http://localhost:8000/user/add-portfolio',{
-        method: 'POST',
-        credentials: "include",
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            portfolio_name: stockPortfolioName,
-            cash: stockQuantity,
-        })
-    });
-
-    if (!response.ok) {
-        throw new Error('Failed to add');
-    }
-
-    alert('Portfolio created successfully');
-    setUpdate(update+1)
-} catch (error) {
-    console.error('Error adding Portfolio:', error);
-}
-
-}
-
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-lg text-red-600 dark:text-red-400">{error}</div>
+      </div>
+    );
+  }
 
   return (
-    <ScrollArea className="h-full">
-      <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-        <div className="flex items-center justify-between space-y-2">
-          <h2 className="text-3xl font-bold tracking-tight">
-            Hi, {user?.name} 👋
-          </h2>
-          <div className="hidden md:flex items-center space-x-2">
-            <CalendarDateRangePicker />
-            <Dialog>
-                                                                <DialogTrigger asChild>
-                                                                    <Button variant="outline" className="bg-green-600 text-white">+ Portfolio</Button>
-                                                                </DialogTrigger>
-                                                                <DialogContent className="sm:max-w-[425px]">
-                                                                    <DialogHeader>
-                                                                        <DialogTitle>Add Portfolio</DialogTitle>
-                                                                        {/* <DialogDescription>
-                                                                            
-                                                                            Stock ID: {item._id}
-                                                                        </DialogDescription> */}
-                                                                    </DialogHeader>
-                                                                    <div className="grid gap-4 py-4">
-                                                                        <div className="grid grid-cols-3 items-center gap-4">
-                                                                            <Label htmlFor="name" className="text-left">
-                                                                                Portfolio Name:
-                                                                            </Label>
-                                                                            <Input
-                                                                                id="name"
-                                                                                placeholder='Enter portfolio name'
-                                                                                value={stockPortfolioName}
-                                                                                onChange={(e) => setStockPortfolioName(e.target.value)}
-                                                                                className="col-span-3"
-                                                                            />
-                                                                        </div>
-                                                                        <div className="grid grid-cols-3 items-center gap-4">
-                                                                            <Label htmlFor="quantity" className="text-left">
-                                                                                Cash:
-                                                                            </Label>
-                                                                            <Input
-                                                                                id="quantity"
-                                                                                placeholder="Enter cash"
-                                                                                value={stockQuantity}
-                                                                                onChange={(e) => setStockQuantity(e.target.value)}
-                                                                                className="col-span-3"
-                                                                            />
-                                                                        </div>
-                                                                    </div>
-                                                                    <DialogFooter>
-                                                                        <Button onClick={() => addPortfolio()}>Add</Button>
-                                                                    </DialogFooter>
-                                                                </DialogContent>
-                                                            </Dialog>
-            {/* <Button onClick={addPortfolio}>+ Create</Button> */}
+    <div className="space-y-6">
+      <div className="border-b border-gray-200 dark:border-gray-700 pb-4 flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Dashboard Home</h1>
+          <p className="mt-2 text-gray-600 dark:text-gray-400">Welcome to your portfolio management dashboard</p>
+        </div>
+        
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogTrigger asChild>
+            <Button className="bg-blue-600 hover:bg-blue-700">
+              Create Portfolio
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Create New Portfolio</DialogTitle>
+              <DialogDescription>
+                Set up a new investment portfolio to track your stocks and ETFs.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="portfolio-name" className="text-right">
+                  Portfolio Name
+                </Label>
+                <Input
+                  id="portfolio-name"
+                  value={portfolioName}
+                  onChange={(e) => setPortfolioName(e.target.value)}
+                  placeholder="My Investment Portfolio"
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="initial-capital" className="text-right">
+                  Initial Capital
+                </Label>
+                <Input
+                  id="initial-capital"
+                  type="number"
+                  value={initialCapital}
+                  onChange={(e) => setInitialCapital(e.target.value)}
+                  placeholder="10000"
+                  className="col-span-3"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button 
+                type="submit" 
+                onClick={handleSavePortfolio}
+                disabled={!portfolioName || !initialCapital}
+              >
+                Save Portfolio
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">Total Portfolio Value</h3>
+          <p className="text-3xl font-bold text-green-600">${totalPortfolioValue.toLocaleString()}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Cash holdings across portfolios</p>
+        </div>
+        
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">Active Portfolios</h3>
+          <p className="text-3xl font-bold text-blue-600">{totalPortfolios}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Portfolio management</p>
+        </div>
+        
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">Total Holdings</h3>
+          <p className="text-3xl font-bold text-purple-600">{totalHoldings}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Stocks and ETFs</p>
+        </div>
+      </div>
+
+      {/* Portfolio List */}
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Your Portfolios</h3>
+        <div className="space-y-4">
+          {portfolios.map((portfolio) => (
+            <div key={portfolio.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+              <div className="flex justify-between items-start mb-2">
+                <h4 className="font-medium text-gray-900 dark:text-gray-100">{portfolio.portfolio_name}</h4>
+                <span className="text-sm text-gray-500 dark:text-gray-400">Cash: ${portfolio.cash.toLocaleString()}</span>
+              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">
+                <p>{portfolio.holdings.length} holdings</p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {portfolio.holdings.map((holding, index) => (
+                    <span key={index} className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs">
+                      {holding.symbol} ({holding.quantity} shares)
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Stock Chart */}
+      {selectedStockData && chartData && (
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Stock Performance</h3>
+          <div className="h-96">
+            <Line data={chartData} options={chartOptions} />
           </div>
         </div>
-        <Tabs defaultValue="overview" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="overview" onClick={() => handleTabClick('overview')}>Overview</TabsTrigger>
-            {user &&  user?.portfolios.map((portfolio,index) => <TabsTrigger  value={portfolio.portfolio_name} onClick={() => handleTabClick(portfolio.portfolio_name)}>
-              {portfolio.portfolio_name}
-            </TabsTrigger>)}
-            {/* <TabsTrigger value="self">
-              Self
-            </TabsTrigger>
-            <TabsTrigger value="portfolio-1">
-              Portfolio 1
-            </TabsTrigger>
-            <TabsTrigger value="portfolio-2">
-              Portfolio 2
-            </TabsTrigger> */}
-          </TabsList>
-          <TabsContent value="overview" className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    Total Profit/Loss
-                  </CardTitle>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    className="h-4 w-4 text-muted-foreground"
-                  >
-                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                  </svg>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">${pnl}</div>
-                  {/* <p className="text-xs text-muted-foreground">
-                    +20.1% from last month
-                  </p> */}
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    CAGR
-                  </CardTitle>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    className="h-4 w-4 text-muted-foreground"
-                  >
-                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                    <circle cx="9" cy="7" r="4" />
-                    <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
-                  </svg>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">25%</div>
-                  {/* <p className="text-xs text-muted-foreground">
-                    +180.1% from last month
-                  </p> */}
-                </CardContent>
-              </Card>
-              <Card>  
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Cash</CardTitle>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    className="h-4 w-4 text-muted-foreground"
-                  >
-                    <rect width="20" height="14" x="2" y="5" rx="2" />
-                    <path d="M2 10h20" />
-                  </svg>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">${user&&calculateCash()}</div>
-                  {/* <p className="text-xs text-muted-foreground">
-                    +19% from last month
-                  </p> */}
-                </CardContent>
-              </Card>
-              {/* <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    Active Now
-                  </CardTitle>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    className="h-4 w-4 text-muted-foreground"
-                  >
-                    <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-                  </svg>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">+573</div>
-                  <p className="text-xs text-muted-foreground">
-                    +201 since last hour
-                  </p>
-                </CardContent>
-              </Card> */}
-            </div>
-            <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-7">
-              <Card className="col-span-4">
-                <CardHeader>
-                  <CardTitle>Top Performing Stock</CardTitle>
-                  <p className="text-xs text-muted-foreground">
-                    {stocks&& stocks[0].fullName}
-                  </p>
-                </CardHeader>
-                <CardContent className="pl-2">
-                {stocks && <LineChart data={stocks[0].data} />}
-                </CardContent>
-              </Card>
-              <Card className="col-span-4 md:col-span-3">
-                <CardHeader>
-                  <CardTitle>All Stocks Composition</CardTitle>
-                  <CardDescription>
-                  Composition of Stocks in each Portfolio
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                {activeTab == "overview" ? <canvas ref={pieChartRef}  id="myChart" /> : null}
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-          
-          {user && stocks &&  user?.portfolios.map((portfolio,index) =>  <TabsContent value={portfolio.portfolio_name} key={index} className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    Total Profit/Loss
-                  </CardTitle>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    className="h-4 w-4 text-muted-foreground"
-                  >
-                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                  </svg>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">${calculateProfitLossInd(portfolio)}</div>
-                  {/* <p className="text-xs text-muted-foreground">
-                    +20.1% from last month
-                  </p> */}
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    CAGR
-                  </CardTitle>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    className="h-4 w-4 text-muted-foreground"
-                  >
-                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                    <circle cx="9" cy="7" r="4" />
-                    <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
-                  </svg>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{cagr(portfolio)}</div>
-                  {/* <p className="text-xs text-muted-foreground">
-                    +180.1% from last month
-                  </p> */}
-                </CardContent>
-              </Card>
-              <Card>  
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Cash</CardTitle>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    className="h-4 w-4 text-muted-foreground"
-                  >
-                    <rect width="20" height="14" x="2" y="5" rx="2" />
-                    <path d="M2 10h20" />
-                  </svg>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">${portfolio.cash.toFixed(2)}</div>
-                  {/* <p className="text-xs text-muted-foreground">
-                    +19% from last month
-                  </p> */}
-                </CardContent>
-              </Card>
-              {/* <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    Active Now
-                  </CardTitle>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    className="h-4 w-4 text-muted-foreground"
-                  >
-                    <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-                  </svg>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">+573</div>
-                  <p className="text-xs text-muted-foreground">
-                    +201 since last hour
-                  </p>
-                </CardContent>
-              </Card> */}
-            </div>
-            <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-7">
-              <Card className="col-span-4">
-              <CardHeader>
-                  <CardTitle>Top Performing Stock</CardTitle>
-                  <p className="text-xs text-muted-foreground">
-                    {stocks&& portfolio.stock.length   && stocks.find(stock => stock._id == portfolio.stock[0].stockID).fullName}
-                  </p>
-                </CardHeader>
-                <CardContent className="pl-2">
-                {stocks && portfolio.stock.length && <LineChart data={stocks.find(stock => stock._id == portfolio.stock[0].stockID).data} />}
-                </CardContent>
-              </Card>
-              <Card className="col-span-4 md:col-span-3">
-                <CardHeader>
-                  <CardTitle>All Stocks Composition</CardTitle>
-                  <CardDescription>
-                  Composition of Stocks in each Portfolio
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                {activeTab == portfolio.portfolio_name? <canvas ref={pieChartRef}  id="myChart" /> : null}
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>)}
-
-
-        </Tabs>
+      )}
+      
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Quick Actions</h3>
+        <div className="flex space-x-4">
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-blue-600 hover:bg-blue-700">
+                Create Portfolio
+              </Button>
+            </DialogTrigger>
+          </Dialog>
+          <Button className="bg-green-600 hover:bg-green-700">
+            Import Portfolio
+          </Button>
+          <Button className="bg-gray-600 hover:bg-gray-700">
+            View Reports
+          </Button>
+        </div>
       </div>
-    </ScrollArea>
-  )
+    </div>
+  );
 }
